@@ -9,6 +9,7 @@ import { seedInitialData } from './utils/seedData';
 import locationRoutes from './routes/locationRoutes';
 import priceListRoutes from './routes/priceListRoutes';
 import currencyRoutes from './routes/currencyRoutes';
+import customerRoutes from './routes/customerRoutes';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/api/branches', branchRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/price-lists', priceListRoutes);
 app.use('/api/currencies', currencyRoutes);
+app.use('/api/customers', customerRoutes);
 
 // MongoDB bağlantısı ve sunucu başlatma
 const startServer = async () => {
