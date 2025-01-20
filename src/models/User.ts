@@ -96,6 +96,8 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
+  isHaveResource: boolean;
+  resourceId?: Schema.Types.ObjectId;
 }
 
 const PhoneNumberSchema = new Schema({
@@ -188,17 +190,79 @@ const UserSchema: Schema = new Schema({
   appointmentHistory: [{
     type: Schema.Types.ObjectId,
     ref: 'Appointment'
-  }]
+  }],
+  isHaveResource: {
+    type: Boolean,
+    default: false
+  },
+  resourceId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Resource'
+  }
 }, {
   timestamps: true
 });
 
-// Şifre hashleme middleware
+// Şifre hashleme ve resource oluşturma middleware
 UserSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  // Eğer şifre değişmişse hashle
+  if (this.isModified('password')) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+
+  // Eğer yeni kayıt ise ve isHaveResource true ise resource oluştur
+  if (this.isNew && this.isHaveResource) {
+    try {
+      const resource = await mongoose.model('Resource').create({
+        branchId: this.branchId,
+        resourceName: `${this.firstName} ${this.lastName}`,
+        active: true,
+        appointmentActive: true,
+        onlineAppointmentActive: true,
+        createdPersonId: this._id,
+        createdBranchId: this.branchId
+      });
+
+      this.resourceId = resource._id;
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  next();
+});
+
+// isHaveResource değiştiğinde resource güncelleme
+UserSchema.pre('findOneAndUpdate', async function(next) {
+  const update = this.getUpdate() as any;
   
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  if (update.isHaveResource !== undefined) {
+    const user = await this.model.findOne(this.getQuery());
+    
+    if (update.isHaveResource && !user.resourceId) {
+      // Resource oluştur
+      const resource = await mongoose.model('Resource').create({
+        branchId: user.branchId,
+        resourceName: `${user.firstName} ${user.lastName}`,
+        active: true,
+        appointmentActive: true,
+        onlineAppointmentActive: true,
+        createdPersonId: user._id,
+        createdBranchId: user.branchId
+      });
+
+      update.resourceId = resource._id;
+    } else if (!update.isHaveResource && user.resourceId) {
+      // Resource'u soft delete yap
+      await mongoose.model('Resource').findByIdAndUpdate(
+        user.resourceId,
+        { isDeleted: true }
+      );
+      update.resourceId = null;
+    }
+  }
+
   next();
 });
 

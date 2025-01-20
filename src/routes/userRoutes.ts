@@ -38,61 +38,56 @@ const router = express.Router();
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: "user@example.com"
  *               password:
  *                 type: string
  *                 minLength: 6
+ *                 example: "password123"
  *               firstName:
  *                 type: string
+ *                 example: "John"
  *               lastName:
  *                 type: string
+ *                 example: "Doe"
  *               phoneNumber:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   countryCode:
+ *                     type: string
+ *                     example: "+90"
+ *                   number:
+ *                     type: string
+ *                     example: "5551234567"
  *               role:
  *                 type: string
  *                 enum: [admin, manager, staff, customer]
+ *                 example: "staff"
  *               branchId:
  *                 type: string
- *                 description: Şube ID (manager ve staff rolleri için zorunlu)
+ *                 description: Manager ve staff rolleri için zorunlu
+ *                 example: "678dc24d31735be6836089b9"
  *               address:
  *                 type: object
  *                 properties:
  *                   street:
  *                     type: string
+ *                     example: "123 Main St"
  *                   city:
  *                     type: string
+ *                     example: "Istanbul"
  *                   state:
  *                     type: string
+ *                     example: "Marmara"
  *                   postalCode:
  *                     type: string
+ *                     example: "34000"
  *                   country:
  *                     type: string
- *             examples:
- *               customer:
- *                 value:
- *                   email: musteri@email.com
- *                   password: sifre123
- *                   firstName: Ahmet
- *                   lastName: Yılmaz
- *                   phoneNumber: "5551234567"
- *                   role: customer
- *               staff:
- *                 value:
- *                   email: calisan@email.com
- *                   password: sifre123
- *                   firstName: Mehmet
- *                   lastName: Demir
- *                   phoneNumber: "5551234568"
- *                   role: staff
- *                   branchId: "60d5ecb8b5c9c62b3c7c1b5e"
- *               manager:
- *                 value:
- *                   email: mudur@email.com
- *                   password: sifre123
- *                   firstName: Ali
- *                   lastName: Kaya
- *                   phoneNumber: "5551234569"
- *                   role: manager
- *                   branchId: "60d5ecb8b5c9c62b3c7c1b5e"
+ *                     example: "Turkey"
+ *               isHaveResource:
+ *                 type: boolean
+ *                 description: True ise ve role manager/staff ise otomatik resource oluşturulur
+ *                 example: true
  *     responses:
  *       201:
  *         description: Kullanıcı başarıyla oluşturuldu
@@ -101,34 +96,70 @@ const router = express.Router();
  *             schema:
  *               type: object
  *               properties:
- *                 isSuccess:
- *                   type: boolean
- *                 message:
+ *                 status:
  *                   type: string
- *                 statusCode:
- *                   type: number
+ *                   example: "success"
+ *                 token:
+ *                   type: string
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                 data:
  *                   type: object
  *                   properties:
  *                     user:
- *                       $ref: '#/components/schemas/User'
- *                     token:
- *                       type: string
+ *                       type: object
+ *                       properties:
+ *                         email:
+ *                           type: string
+ *                           example: "user@example.com"
+ *                         firstName:
+ *                           type: string
+ *                           example: "John"
+ *                         lastName:
+ *                           type: string
+ *                           example: "Doe"
+ *                         phoneNumber:
+ *                           type: object
+ *                           properties:
+ *                             countryCode:
+ *                               type: string
+ *                               example: "+90"
+ *                             number:
+ *                               type: string
+ *                               example: "5551234567"
+ *                         role:
+ *                           type: string
+ *                           example: "staff"
+ *                         branchId:
+ *                           type: string
+ *                           example: "678dc24d31735be6836089b9"
+ *                         address:
+ *                           type: object
+ *                           properties:
+ *                             street:
+ *                               type: string
+ *                               example: "123 Main St"
+ *                             city:
+ *                               type: string
+ *                               example: "Istanbul"
+ *                             state:
+ *                               type: string
+ *                               example: "Marmara"
+ *                             postalCode:
+ *                               type: string
+ *                               example: "34000"
+ *                             country:
+ *                               type: string
+ *                               example: "Turkey"
+ *                         isHaveResource:
+ *                           type: boolean
+ *                           example: true
+ *                         resourceId:
+ *                           type: string
+ *                           example: "60d5ecb8b5c9c62b3c7c1b5f"
  *       400:
  *         description: Validasyon hatası
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 isSuccess:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                 statusCode:
- *                   type: number
- *                   example: 400
+ *       409:
+ *         description: Email adresi zaten kullanımda
  * 
  * /api/users/{id}:
  *   get:

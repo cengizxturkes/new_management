@@ -163,7 +163,7 @@ const options = {
             validTo: '2024-12-31T23:59:59.999Z',
             allBranches: true,
             currencyId: '60d5ecb8b5c9c62b3c7c1b5f',
-            branchIds: ['60d5ecb8b5c9c62b3c7c1b5e'],
+            branchIds: ['678dc24d31735be6836089b9'],
             isActive: true
           }
         },

@@ -94,7 +94,7 @@ import mongoose, { Schema, Document } from 'mongoose';
  *         phoneNumber:
  *           countryCode: "+90"
  *           number: "2121234567"
- *         defaultCurrencyId: "60d5ecb8b5c9c62b3c7c1b5e"
+ *         defaultCurrencyId: "678dc24d31735be6836089b9"
  *         defaultPriceListId: "60d5ecb8b5c9c62b3c7c1b5f"
  *         managerPersonId: "60d5ecb8b5c9c62b3c7c1b60"
  *         createdPersonId: "60d5ecb8b5c9c62b3c7c1b61"
