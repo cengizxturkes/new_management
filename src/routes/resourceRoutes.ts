@@ -52,6 +52,10 @@ import {
  *                             type: boolean
  *                           onlineAppointmentActive:
  *                             type: boolean
+ *                           userId:
+ *                             type: string
+ *                             description: Kaynağa atanmış kullanıcının ID'si
+ *                             nullable: true
  *   post:
  *     summary: Yeni kaynak oluşturur
  *     tags: [Resources]

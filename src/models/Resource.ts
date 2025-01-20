@@ -10,6 +10,7 @@ export interface IResource extends Document {
   createdPersonId: Schema.Types.ObjectId;
   createdBranchId: Schema.Types.ObjectId;
   isDeleted: boolean;
+  userId?: Schema.Types.ObjectId;
 }
 
 const ResourceSchema = new Schema({
@@ -48,6 +49,11 @@ const ResourceSchema = new Schema({
   isDeleted: {
     type: Boolean,
     default: false
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
 }, {
   timestamps: true

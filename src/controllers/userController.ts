@@ -5,6 +5,7 @@ import { catchAsync } from '../utils/catchAsync';
 import { ApiResponseBuilder } from '../interfaces/ApiResponse';
 import Branch from '../models/Branch';
 import { PaginationOptions, PaginatedResponse } from '../interfaces/Pagination';
+import Resource from '../models/Resource';
 
 // JWT Token oluşturma
 const createToken = (user: IUser): string => {
@@ -24,7 +25,8 @@ export const register = catchAsync(async (req: Request, res: Response): Promise<
     phoneNumber,
     role,
     branchId,
-    address
+    address,
+    isHaveResource
   } = req.body;
 
   // Role göre branchId zorunluluğunu kontrol et
@@ -111,6 +113,7 @@ export const register = catchAsync(async (req: Request, res: Response): Promise<
     return;
   }
 
+  // Kullanıcıyı oluştur
   const user = await User.create({
     email,
     password,
@@ -119,8 +122,27 @@ export const register = catchAsync(async (req: Request, res: Response): Promise<
     phoneNumber,
     role,
     branchId,
-    address
+    address,
+    isHaveResource
   });
+
+  // Eğer isHaveResource true ise ve branchId varsa resource oluştur
+  if (isHaveResource && branchId) {
+    const resource = await Resource.create({
+      branchId: user.branchId,
+      resourceName: `${user.firstName} ${user.lastName}`,
+      active: true,
+      appointmentActive: true,
+      onlineAppointmentActive: true,
+      createdPersonId: user._id,
+      createdBranchId: user.branchId,
+      userId: user._id
+    });
+
+    // Resource ID'yi kullanıcıya ata
+    user.resourceId = resource._id;
+    await user.save();
+  }
 
   const token = createToken(user);
 

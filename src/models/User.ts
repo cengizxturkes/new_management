@@ -203,33 +203,13 @@ const UserSchema: Schema = new Schema({
   timestamps: true
 });
 
-// Şifre hashleme ve resource oluşturma middleware
+// Şifre hashleme middleware
 UserSchema.pre('save', async function(next) {
   // Eğer şifre değişmişse hashle
   if (this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
-
-  // Eğer yeni kayıt ise ve isHaveResource true ise resource oluştur
-  if (this.isNew && this.isHaveResource) {
-    try {
-      const resource = await mongoose.model('Resource').create({
-        branchId: this.branchId,
-        resourceName: `${this.firstName} ${this.lastName}`,
-        active: true,
-        appointmentActive: true,
-        onlineAppointmentActive: true,
-        createdPersonId: this._id,
-        createdBranchId: this.branchId
-      });
-
-      this.resourceId = resource._id;
-    } catch (error) {
-      return next(error);
-    }
-  }
-
   next();
 });
 
