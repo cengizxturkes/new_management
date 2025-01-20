@@ -11,7 +11,7 @@ import priceListRoutes from './routes/priceListRoutes';
 import currencyRoutes from './routes/currencyRoutes';
 import customerRoutes from './routes/customerRoutes';
 import resourceRoutes from './routes/resourceRoutes';
-
+import appointmentRoutes from './routes/appointmentRoutes';
 dotenv.config();
 
 const app = express();
@@ -30,7 +30,7 @@ app.use('/api/price-lists', priceListRoutes);
 app.use('/api/currencies', currencyRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/resources', resourceRoutes);
-
+app.use('/api/appointments', appointmentRoutes);
 // MongoDB bağlantısı ve sunucu başlatma
 const startServer = async () => {
   try {

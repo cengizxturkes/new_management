@@ -1,14 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { IResource } from './Resource';
+import { IUser } from './User';
+import { IBranch } from './Branch';
+import { ICustomer } from './Customer';
 
 export interface IAppointment extends Document {
-  resourceId: Schema.Types.ObjectId;
-  customerId: Schema.Types.ObjectId;
+  resourceId: IResource | Schema.Types.ObjectId;
+  customerId: ICustomer | Schema.Types.ObjectId;
   startTime: Date;
   endTime: Date;
   status: 'scheduled' | 'completed' | 'cancelled';
   notes?: string;
-  createdBy: Schema.Types.ObjectId;
-  createdBranchId: Schema.Types.ObjectId;
+  createdBy: IUser | Schema.Types.ObjectId;
+  createdBranchId: IBranch | Schema.Types.ObjectId;
 }
 
 const AppointmentSchema = new Schema({
@@ -19,7 +23,7 @@ const AppointmentSchema = new Schema({
   },
   customerId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Customer',
     required: [true, 'Müşteri ID zorunludur']
   },
   startTime: {

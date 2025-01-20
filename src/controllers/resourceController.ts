@@ -4,7 +4,9 @@ import User from '../models/User';
 import { catchAsync } from '../utils/catchAsync';
 import AppError from '../utils/appError';
 import Appointment from '../models/Appointment';
+import AvailableSlot from '../models/AvailableSlot';
 import moment from 'moment';
+import mongoose from 'mongoose';
 
 export const createResource = catchAsync(async (req: Request, res: Response) => {
   const resource = await Resource.create({
@@ -113,6 +115,7 @@ export const restoreResource = catchAsync(async (req: Request, res: Response, ne
 });
 
 interface TimeSlot {
+  _id: string;
   start: Date;
   end: Date;
   isAvailable: boolean;
@@ -120,6 +123,11 @@ interface TimeSlot {
 
 export const getAvailableSlots = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { resourceId, durationInMinutes, queryStartDate, queryEndDate } = req.body;
+
+  // ObjectId kontrolü
+  if (!mongoose.Types.ObjectId.isValid(resourceId)) {
+    return next(new AppError('Geçersiz resource ID formatı', 400));
+  }
 
   // Tarih aralığı kontrolü
   const startDate = moment(queryStartDate);
@@ -134,16 +142,23 @@ export const getAvailableSlots = catchAsync(async (req: Request, res: Response, 
     return next(new AppError('Bitiş tarihi başlangıç tarihinden önce olamaz', 400));
   }
 
-  // Resource'un varlığını ve aktifliğini kontrol et
-  const resource = await Resource.findOne({
-    _id: resourceId,
-    isDeleted: false,
-    active: true,
-    appointmentActive: true
-  });
+  // Resource kontrolü
+  const resource = await Resource.findById(resourceId);
 
   if (!resource) {
-    return next(new AppError('Kaynak bulunamadı veya randevuya uygun değil', 404));
+    return next(new AppError('Kaynak bulunamadı', 404));
+  }
+
+  if (resource.isDeleted) {
+    return next(new AppError('Bu kaynak silinmiş durumda', 400));
+  }
+
+  if (!resource.active) {
+    return next(new AppError('Bu kaynak aktif değil', 400));
+  }
+
+  if (!resource.appointmentActive) {
+    return next(new AppError('Bu kaynak randevuya kapalı', 400));
   }
 
   // Tarih aralığındaki mevcut randevuları getir
@@ -158,6 +173,9 @@ export const getAvailableSlots = catchAsync(async (req: Request, res: Response, 
   const slots: TimeSlot[] = [];
   let currentTime = moment(queryStartDate);
   const endTime = moment(queryEndDate);
+
+  // Önceki slotları temizle
+  await AvailableSlot.deleteMany({ resourceId });
 
   while (currentTime.isBefore(endTime)) {
     const slotStart = currentTime.toDate();
@@ -175,11 +193,21 @@ export const getAvailableSlots = catchAsync(async (req: Request, res: Response, 
       );
     });
 
-    slots.push({
-      start: slotStart,
-      end: slotEnd,
-      isAvailable: isSlotAvailable
-    });
+    if (isSlotAvailable) {
+      // Slot'u veritabanına kaydet
+      const availableSlot = await AvailableSlot.create({
+        resourceId,
+        startTime: slotStart,
+        endTime: slotEnd
+      });
+
+      slots.push({
+        _id: availableSlot._id.toString(),
+        start: slotStart,
+        end: slotEnd,
+        isAvailable: true
+      });
+    }
 
     currentTime.add(durationInMinutes, 'minutes');
   }
