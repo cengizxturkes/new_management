@@ -12,6 +12,8 @@ import currencyRoutes from './routes/currencyRoutes';
 import customerRoutes from './routes/customerRoutes';
 import resourceRoutes from './routes/resourceRoutes';
 import appointmentRoutes from './routes/appointmentRoutes';
+import admissionRoutes from './routes/admissionRoutes';
+
 dotenv.config();
 
 const app = express();
@@ -31,6 +33,7 @@ app.use('/api/currencies', currencyRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/admissions', admissionRoutes); 
 // MongoDB bağlantısı ve sunucu başlatma
 const startServer = async () => {
   try {
