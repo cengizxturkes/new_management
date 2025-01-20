@@ -6,7 +6,8 @@ import {
   getResource,
   updateResource,
   deleteResource,
-  restoreResource
+  restoreResource,
+  getAvailableSlots
 } from '../controllers/resourceController';
 
 /**
@@ -169,6 +170,84 @@ import {
  *         description: Kaynak başarıyla geri yüklendi
  *       404:
  *         description: Kaynak bulunamadı
+ *
+ * @swagger
+ * /api/resources/available-slots:
+ *   post:
+ *     summary: Belirli bir kaynağın boş randevu slotlarını getirir
+ *     tags: [Resources]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - resourceId
+ *               - durationInMinutes
+ *               - queryStartDate
+ *               - queryEndDate
+ *             properties:
+ *               resourceId:
+ *                 type: string
+ *                 description: Randevu slotları kontrol edilecek kaynağın ID'si
+ *               durationInMinutes:
+ *                 type: number
+ *                 description: Randevu süresi (dakika cinsinden)
+ *               queryStartDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Sorgu başlangıç tarihi
+ *               queryEndDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Sorgu bitiş tarihi (başlangıç tarihinden en fazla 1 ay sonrası olabilir)
+ *     responses:
+ *       200:
+ *         description: Boş randevu slotları başarıyla getirildi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     resource:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         resourceName:
+ *                           type: string
+ *                     queryStartDate:
+ *                       type: string
+ *                       format: date-time
+ *                     queryEndDate:
+ *                       type: string
+ *                       format: date-time
+ *                     durationInMinutes:
+ *                       type: number
+ *                     availableSlots:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           start:
+ *                             type: string
+ *                             format: date-time
+ *                           end:
+ *                             type: string
+ *                             format: date-time
+ *                           isAvailable:
+ *                             type: boolean
+ *       404:
+ *         description: Kaynak bulunamadı veya randevuya uygun değil
  */
 
 const router = express.Router();
@@ -179,6 +258,8 @@ router
   .route('/')
   .get(getAllResources)
   .post(restrictTo('admin'), createResource);
+
+router.post('/available-slots', getAvailableSlots);
 
 router
   .route('/:id')
