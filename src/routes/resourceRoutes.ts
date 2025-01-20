@@ -85,7 +85,7 @@ import {
  *       201:
  *         description: Kaynak başarıyla oluşturuldu
  * 
- * /api//resources/{id}:
+ * /api/resources/{id}:
  *   get:
  *     summary: Belirli bir kaynağı getirir
  *     tags: [Resources]
@@ -152,7 +152,7 @@ import {
  *       404:
  *         description: Kaynak bulunamadı
  * 
- * /api//resources/{id}/restore:
+ * /api/resources/{id}/restore:
  *   patch:
  *     summary: Silinmiş kaynağı geri yükler
  *     tags: [Resources]

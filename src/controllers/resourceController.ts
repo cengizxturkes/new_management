@@ -32,7 +32,11 @@ export const getAllResources = catchAsync(async (_req: Request, res: Response) =
 });
 
 export const getResource = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const resource = await Resource.findById(req.params.id);
+  const resource = await Resource.findById(req.params.id)
+    .populate({
+      path: 'userId',
+      select: 'firstName lastName email phoneNumber role branchId isActive'
+    });
 
   if (!resource) {
     return next(new AppError('Bu ID ile kaynak bulunamadı', 404));
