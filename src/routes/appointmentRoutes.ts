@@ -102,6 +102,87 @@ import {
  *               notes:
  *                 type: string
  *                 description: Randevu notları (opsiyonel)
+ *     responses:
+ *       201:
+ *         description: Randevu başarıyla oluşturuldu
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     appointment:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                           description: Randevu ID'si
+ *                         resourceId:
+ *                           type: string
+ *                           description: Kaynak ID'si
+ *                         customerId:
+ *                           type: string
+ *                           description: Müşteri ID'si
+ *                         startTime:
+ *                           type: string
+ *                           format: date-time
+ *                           description: Randevu başlangıç zamanı
+ *                         endTime:
+ *                           type: string
+ *                           format: date-time
+ *                           description: Randevu bitiş zamanı
+ *                         status:
+ *                           type: string
+ *                           enum: [scheduled, completed, cancelled]
+ *                           description: Randevu durumu
+ *                         notes:
+ *                           type: string
+ *                           description: Randevu notları
+ *                         createdBy:
+ *                           type: string
+ *                           description: Randevuyu oluşturan kullanıcı ID'si
+ *                         createdBranchId:
+ *                           type: string
+ *                           description: Randevunun oluşturulduğu şube ID'si
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                           description: Oluşturulma zamanı
+ *                         updatedAt:
+ *                           type: string
+ *                           format: date-time
+ *                           description: Son güncelleme zamanı
+ *       400:
+ *         description: Geçersiz istek
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: error
+ *                 message:
+ *                   type: string
+ *                   example: slotId zorunludur. Önce /resources/available-slots endpoint'ini kullanarak uygun bir slot seçin
+ *       401:
+ *         description: Yetkilendirme hatası
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: error
+ *                 message:
+ *                   type: string
+ *                   example: Lütfen giriş yapın
  * 
  * /api/appointments/{id}:
  *   get:
