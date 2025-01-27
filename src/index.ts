@@ -13,6 +13,9 @@ import customerRoutes from './routes/customerRoutes';
 import resourceRoutes from './routes/resourceRoutes';
 import appointmentRoutes from './routes/appointmentRoutes';
 import admissionRoutes from './routes/admissionRoutes';
+import messageRoutes from './routes/messageRoutes';
+import { createServer } from 'http';
+import { configureSocket } from './config/socket';
 
 dotenv.config();
 
@@ -20,6 +23,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(express.static('src/public')); // Test sayfası için static dosya servisi
 
 // Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
@@ -33,7 +37,12 @@ app.use('/api/currencies', currencyRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/appointments', appointmentRoutes);
-app.use('/api/admissions', admissionRoutes); 
+app.use('/api/admissions', admissionRoutes);
+app.use('/api/messages', messageRoutes); 
+
+const httpServer = createServer(app);
+export const io = configureSocket(httpServer);
+
 // MongoDB bağlantısı ve sunucu başlatma
 const startServer = async () => {
   try {
@@ -46,8 +55,8 @@ const startServer = async () => {
       await seedInitialData();
       
       const PORT = process.env.PORT || 3000;
-      app.listen(PORT, () => {
-        console.log(`Server ${PORT} portunda çalışıyor`);
+      httpServer.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
         console.log(`Swagger UI: http://localhost:${PORT}/api-docs`);
       });
     } catch (seedError) {

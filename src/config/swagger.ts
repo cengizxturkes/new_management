@@ -26,6 +26,10 @@ const options = {
       {
         name: 'Locations',
         description: 'Lokasyon yönetimi işlemleri'
+      },
+      {
+        name: 'Messages',
+        description: 'Mesaj işlemleri'
       }
     ],
     components: {
@@ -411,6 +415,41 @@ const options = {
                 postalZone: "34100"
               }
             ]
+          }
+        },
+        Message: {
+          type: 'object',
+          required: [
+            'sender',
+            'receiver',
+            'content'
+          ],
+          properties: {
+            _id: {
+              type: 'string',
+              description: 'Mesaj ID'
+            },
+            sender: {
+              type: 'string',
+              description: 'Gönderen kullanıcının ID'
+            },
+            receiver: {
+              type: 'string',
+              description: 'Alıcı kullanıcının ID'
+            },
+            content: {
+              type: 'string',
+              description: 'Mesaj içeriği'
+            },
+            read: {
+              type: 'boolean',
+              description: 'Mesajın okunup okunmadığı'
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Mesajın oluşturulma tarihi'
+            }
           }
         }
       },
