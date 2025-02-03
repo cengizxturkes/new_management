@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Görüşme</title>
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .login-form {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .video-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .users-list {
+            width: 250px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-right: 20px;
+        }
+        .user-item {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .user-item:hover {
+            background-color: #f0f0f0;
+        }
+        .user-item.active {
+            background-color: #e3f2fd;
+        }
+        video {
+            width: 400px;
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Form -->
+        <div id="loginForm" class="login-form">
+            <h2>Giriş Yap</h2>
+            <input type="email" id="email" placeholder="E-posta" />
+            <input type="password" id="password" placeholder="Şifre" />
+            <button onclick="login()">Giriş Yap</button>
+        </div>
+
+        <!-- Main Content -->
+        <div id="mainContent" class="hidden">
+            <div class="video-container">
+                <!-- Users List -->
+                <div class="users-list">
+                    <h3>Aktif Kullanıcılar</h3>
+                    <div id="usersList"></div>
+                </div>
+
+                <!-- Videos -->
+                <div>
+                    <h3>Yerel Kamera</h3>
+                    <video id="localVideo" autoplay playsinline></video>
+                </div>
+                <div>
+                    <h3>Uzak Bağlantı</h3>
+                    <video id="remoteVideo" autoplay playsinline></video>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="startButton">Kamerayı Başlat</button>
+                <button id="callButton" disabled>Arama Başlat</button>
+                <button id="hangupButton" disabled>Aramayı Sonlandır</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        let localStream;
+        let peerConnection;
+        let selectedUser;
+        let currentUser;
+
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        };
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const mainContent = document.getElementById('mainContent');
+        const usersList = document.getElementById('usersList');
+        const startButton = document.getElementById('startButton');
+        const callButton = document.getElementById('callButton');
+        const hangupButton = document.getElementById('hangupButton');
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+                if (data.isSuccess) {
+                    currentUser = data.data.user;
+                    initializeSocket(data.data.token);
+                    loginForm.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                } else {
+                    alert('Giriş başarısız: ' + data.message);
+                }
+            } catch (error) {
+                alert('Giriş hatası: ' + error.message);
+            }
+        }
+
+        function initializeSocket(token) {
+            socket = io({
+                auth: {
+                    token: token
+                }
+            });
+
+            socket.on('connect', () => {
+                console.log('Socket.IO bağlantısı başarılı');
+            });
+
+            socket.on('activeUsers', (users) => {
+                updateUsersList(users);
+            });
+
+            socket.on('callRequest', (caller) => {
+                if (confirm(`${caller.name} görüntülü arama yapıyor. Kabul ediyor musunuz?`)) {
+                    selectedUser = caller;
+                    socket.emit('callAccepted', { userId: caller.id });
+                    startCall(false);
+                } else {
+                    socket.emit('callRejected', { userId: caller.id });
+                }
+            });
+
+            socket.on('callAccepted', () => {
+                startCall(true);
+            });
+
+            socket.on('callRejected', () => {
+                alert('Arama reddedildi');
+                resetCall();
+            });
+
+            socket.on('offer', async (description) => {
+                try {
+                    if (!localStream) {
+                        localStream = await navigator.mediaDevices.getUserMedia({
+                            audio: true,
+                            video: true
+                        });
+                        localVideo.srcObject = localStream;
+                    }
+
+                    if (!peerConnection) {
+                        createPeerConnection();
+                    }
+
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(description));
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    socket.emit('answer', { userId: selectedUser.id, description: answer });
+                } catch (e) {
+                    console.error('Offer işleme hatası:', e);
+                    alert('Arama yanıtlanamadı: ' + e.message);
+                }
+            });
+
+            socket.on('answer', async (description) => {
+                try {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(description));
+                } catch (e) {
+                    console.error('Answer işleme hatası:', e);
+                }
+            });
+
+            socket.on('ice-candidate', async (candidate) => {
+                try {
+                    if (peerConnection) {
+                        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    }
+                } catch (e) {
+                    console.error('ICE candidate hatası:', e);
+                }
+            });
+        }
+
+        function updateUsersList(users) {
+            usersList.innerHTML = '';
+            users.forEach(user => {
+                if (user.id !== currentUser._id) {
+                    const div = document.createElement('div');
+                    div.className = 'user-item';
+                    div.textContent = user.name;
+                    div.onclick = () => selectUser(user);
+                    usersList.appendChild(div);
+                }
+            });
+        }
+
+        function selectUser(user) {
+            selectedUser = user;
+            document.querySelectorAll('.user-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            startButton.disabled = false;
+        }
+
+        startButton.onclick = async () => {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                });
+                localVideo.srcObject = localStream;
+                startButton.disabled = true;
+                callButton.disabled = false;
+            } catch (e) {
+                console.error('Kamera erişim hatası:', e);
+                alert('Kamera erişimi sağlanamadı');
+            }
+        };
+
+        callButton.onclick = () => {
+            if (!selectedUser) {
+                alert('Lütfen bir kullanıcı seçin');
+                return;
+            }
+            socket.emit('callRequest', { userId: selectedUser.id });
+            callButton.disabled = true;
+            hangupButton.disabled = false;
+        };
+
+        async function startCall(isInitiator) {
+            try {
+                if (!localStream) {
+                    localStream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                        video: true
+                    });
+                    localVideo.srcObject = localStream;
+                }
+
+                createPeerConnection();
+
+                if (isInitiator) {
+                    const offer = await peerConnection.createOffer({
+                        offerToReceiveAudio: true,
+                        offerToReceiveVideo: true
+                    });
+                    await peerConnection.setLocalDescription(offer);
+                    socket.emit('offer', { userId: selectedUser.id, description: offer });
+                }
+            } catch (e) {
+                console.error('Arama başlatma hatası:', e);
+                alert('Arama başlatılamadı: ' + e.message);
+            }
+        }
+
+        function createPeerConnection() {
+            try {
+                peerConnection = new RTCPeerConnection(configuration);
+
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.emit('ice-candidate', {
+                            userId: selectedUser.id,
+                            candidate: event.candidate
+                        });
+                    }
+                };
+
+                peerConnection.ontrack = (event) => {
+                    console.log('Uzak video akışı alındı:', event.streams[0]);
+                    if (event.streams && event.streams[0]) {
+                        remoteVideo.srcObject = event.streams[0];
+                    }
+                };
+
+                peerConnection.oniceconnectionstatechange = () => {
+                    console.log('ICE bağlantı durumu:', peerConnection.iceConnectionState);
+                };
+
+                if (localStream) {
+                    localStream.getTracks().forEach(track => {
+                        peerConnection.addTrack(track, localStream);
+                    });
+                }
+            } catch (e) {
+                console.error('PeerConnection oluşturma hatası:', e);
+                alert('Video bağlantısı kurulamadı: ' + e.message);
+            }
+        }
+
+        function resetCall() {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            callButton.disabled = false;
+            hangupButton.disabled = true;
+        }
+
+        hangupButton.onclick = () => {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            localVideo.srcObject = null;
+            remoteVideo.srcObject = null;
+            startButton.disabled = false;
+            callButton.disabled = true;
+            hangupButton.disabled = true;
+            socket.emit('hangup', { userId: selectedUser.id });
+        };
+    </script>
+</body>
+</html> 

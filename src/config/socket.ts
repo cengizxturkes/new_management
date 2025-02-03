@@ -44,13 +44,68 @@ export const configureSocket = (server: HTTPServer) => {
     console.log('User connected:', socket.data.user._id);
     
     // Kullanıcıyı aktif kullanıcılar listesine ekle
-    activeUsers.set(socket.data.user._id.toString(), socket.id);
+    activeUsers.set(socket.data.user._id.toString(), {
+      id: socket.data.user._id,
+      name: `${socket.data.user.firstName} ${socket.data.user.lastName}`,
+      email: socket.data.user.email,
+      socketId: socket.id
+    });
     
     // Tüm kullanıcılara aktif kullanıcı listesini gönder
-    io.emit('activeUsers', Array.from(activeUsers.keys()));
+    io.emit('activeUsers', Array.from(activeUsers.values()));
 
-    // Kullanıcıyı kendi odasına katılma
-    socket.join(socket.data.user._id.toString());
+    // Arama istekleri
+    socket.on('callRequest', (data) => {
+      const receiverSocket = activeUsers.get(data.userId)?.socketId;
+      if (receiverSocket) {
+        io.to(receiverSocket).emit('callRequest', {
+          id: socket.data.user._id,
+          name: socket.data.user.name
+        });
+      }
+    });
+
+    socket.on('callAccepted', (data) => {
+      const callerSocket = activeUsers.get(data.userId)?.socketId;
+      if (callerSocket) {
+        io.to(callerSocket).emit('callAccepted');
+      }
+    });
+
+    socket.on('callRejected', (data) => {
+      const callerSocket = activeUsers.get(data.userId)?.socketId;
+      if (callerSocket) {
+        io.to(callerSocket).emit('callRejected');
+      }
+    });
+
+    socket.on('offer', (data) => {
+      const receiverSocket = activeUsers.get(data.userId)?.socketId;
+      if (receiverSocket) {
+        io.to(receiverSocket).emit('offer', data.description);
+      }
+    });
+
+    socket.on('answer', (data) => {
+      const callerSocket = activeUsers.get(data.userId)?.socketId;
+      if (callerSocket) {
+        io.to(callerSocket).emit('answer', data.description);
+      }
+    });
+
+    socket.on('ice-candidate', (data) => {
+      const receiverSocket = activeUsers.get(data.userId)?.socketId;
+      if (receiverSocket) {
+        io.to(receiverSocket).emit('ice-candidate', data.candidate);
+      }
+    });
+
+    socket.on('hangup', (data) => {
+      const receiverSocket = activeUsers.get(data.userId)?.socketId;
+      if (receiverSocket) {
+        io.to(receiverSocket).emit('hangup');
+      }
+    });
 
     // Mesaj gönderme
     socket.on('sendMessage', async (data: { receiverId: string; content: string }) => {
@@ -113,7 +168,7 @@ export const configureSocket = (server: HTTPServer) => {
       // Kullanıcıyı aktif listeden çıkar
       activeUsers.delete(socket.data.user._id.toString());
       // Tüm kullanıcılara güncel aktif kullanıcı listesini gönder
-      io.emit('activeUsers', Array.from(activeUsers.keys()));
+      io.emit('activeUsers', Array.from(activeUsers.values()));
     });
   });
 
