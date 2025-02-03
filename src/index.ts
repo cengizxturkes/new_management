@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
 import { specs } from './config/swagger';
 import userRoutes from './routes/userRoutes';
 import branchRoutes from './routes/branchRoutes';
@@ -20,6 +21,14 @@ import { configureSocket } from './config/socket';
 dotenv.config();
 
 const app = express();
+
+// CORS ayarları
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:3000'], // Flutter web uygulamasının URL'i
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // Middleware
 app.use(express.json());

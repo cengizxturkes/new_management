@@ -7,8 +7,10 @@ import Message from '../models/Message';
 export const configureSocket = (server: HTTPServer) => {
   const io = new Server(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-      methods: ['GET', 'POST']
+      origin: ['http://localhost:3001', 'http://localhost:3000'],
+      methods: ['GET', 'POST'],
+      allowedHeaders: ['Authorization'],
+      credentials: true
     }
   });
 
