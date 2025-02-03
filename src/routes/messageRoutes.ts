@@ -5,7 +5,9 @@ import {
   sendMessage,
   getMyMessages,
   getMessagesBetweenUsers,
-  markMessageAsRead
+  markMessageAsRead,
+  getMyConversations,
+  getMessageMaster
 } from '../controllers/messageController';
 
 /**
@@ -19,6 +21,69 @@ const router = express.Router();
 
 // Tüm mesaj route'ları için authentication gerekli
 router.use(protect);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Conversation:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Konuşulan kullanıcının ID'si
+ *         user:
+ *           type: object
+ *           properties:
+ *             _id:
+ *               type: string
+ *               description: Kullanıcı ID'si
+ *             firstName:
+ *               type: string
+ *               description: Kullanıcının adı
+ *             lastName:
+ *               type: string
+ *               description: Kullanıcının soyadı
+ *             email:
+ *               type: string
+ *               description: Kullanıcının e-posta adresi
+ *         lastMessage:
+ *           type: object
+ *           properties:
+ *             _id:
+ *               type: string
+ *               description: Mesaj ID'si
+ *             content:
+ *               type: string
+ *               description: Mesaj içeriği
+ *             sender:
+ *               type: string
+ *               description: Gönderen kullanıcının ID'si
+ *             createdAt:
+ *               type: string
+ *               format: date-time
+ *               description: Mesajın gönderilme tarihi
+ *             read:
+ *               type: boolean
+ *               description: Mesajın okunma durumu
+ *         unreadCount:
+ *           type: number
+ *           description: Okunmamış mesaj sayısı
+ *       example:
+ *         _id: "65be1234c9d2f1e6e8123456"
+ *         user:
+ *           _id: "65be1234c9d2f1e6e8123456"
+ *           firstName: "John"
+ *           lastName: "Doe"
+ *           email: "john@example.com"
+ *         lastMessage:
+ *           _id: "65be1234c9d2f1e6e8123456"
+ *           content: "Merhaba, nasılsın?"
+ *           sender: "65be1234c9d2f1e6e8123456"
+ *           createdAt: "2024-02-03T12:00:00.000Z"
+ *           read: false
+ *         unreadCount: 3
+ */
 
 /**
  * @swagger
@@ -153,5 +218,199 @@ router.get('/conversation/:userId', getMessagesBetweenUsers);
  *         description: Bu işlem için yetkiniz yok
  */
 router.patch('/mark-read/:messageId', markMessageAsRead);
+
+/**
+ * @swagger
+ * /api/messages/conversations:
+ *   get:
+ *     summary: Kullanıcının tüm konuşmalarını son mesajlarıyla birlikte getir
+ *     description: |
+ *       Bu endpoint, giriş yapmış kullanıcının tüm konuşmalarını getirir.
+ *       Her konuşma için:
+ *       - Konuşulan kişinin bilgileri
+ *       - Son mesajın detayları
+ *       - Okunmamış mesaj sayısı
+ *       bilgilerini içerir.
+ *       
+ *       Konuşmalar son mesaj tarihine göre sıralanır (en son konuşma en üstte).
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Konuşmalar başarıyla getirildi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isSuccess:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Konuşmalar başarıyla getirildi
+ *                 statusCode:
+ *                   type: number
+ *                   example: 200
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Conversation'
+ *       401:
+ *         description: Yetkilendirme hatası
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isSuccess:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Lütfen giriş yapın
+ *                 statusCode:
+ *                   type: number
+ *                   example: 401
+ *       500:
+ *         description: Sunucu hatası
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isSuccess:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Konuşmalar getirilirken bir hata oluştu
+ *                 statusCode:
+ *                   type: number
+ *                   example: 500
+ *                 error:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
+router.get('/conversations', getMyConversations);
+
+/**
+ * @swagger
+ * /api/messages/master:
+ *   get:
+ *     summary: Tüm mesajlaşma verilerini tek seferde getir
+ *     description: |
+ *       Bu endpoint, kullanıcının mesajlaşma ile ilgili tüm verilerini tek seferde getirir:
+ *       - Tüm konuşmaların özeti (son mesajlar ve kullanıcı bilgileri)
+ *       - Toplam okunmamış mesaj sayısı
+ *       - Son 24 saat içindeki mesaj istatistikleri
+ *       - Online kullanıcılar
+ *       - Arşivlenmiş konuşmalar
+ *       
+ *       Veriler, kullanıcı deneyimini optimize etmek için gruplanmış ve sıralanmış şekilde gelir.
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Veriler başarıyla getirildi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isSuccess:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Mesajlaşma verileri başarıyla getirildi
+ *                 statusCode:
+ *                   type: number
+ *                   example: 200
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     conversations:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Conversation'
+ *                       description: Tüm konuşmaların listesi
+ *                     totalUnreadCount:
+ *                       type: number
+ *                       example: 5
+ *                       description: Toplam okunmamış mesaj sayısı
+ *                     lastDayStats:
+ *                       type: object
+ *                       properties:
+ *                         sentCount:
+ *                           type: number
+ *                           example: 10
+ *                           description: Son 24 saatte gönderilen mesaj sayısı
+ *                         receivedCount:
+ *                           type: number
+ *                           example: 8
+ *                           description: Son 24 saatte alınan mesaj sayısı
+ *                     onlineUsers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             description: Kullanıcı ID'si
+ *                           firstName:
+ *                             type: string
+ *                             description: Kullanıcı adı
+ *                           lastName:
+ *                             type: string
+ *                             description: Kullanıcı soyadı
+ *                           lastSeen:
+ *                             type: string
+ *                             format: date-time
+ *                             description: Son görülme zamanı
+ *                     archivedConversations:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Conversation'
+ *                       description: Arşivlenmiş konuşmaların listesi
+ *       401:
+ *         description: Yetkilendirme hatası
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isSuccess:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Lütfen giriş yapın
+ *                 statusCode:
+ *                   type: number
+ *                   example: 401
+ *       500:
+ *         description: Sunucu hatası
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isSuccess:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Veriler getirilirken bir hata oluştu
+ *                 statusCode:
+ *                   type: number
+ *                   example: 500
+ *                 error:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
+router.get('/master', getMessageMaster);
 
 export default router; 
