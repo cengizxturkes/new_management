@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #messages { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        #form { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex: 1; padding: 5px; }
+        button { padding: 5px 15px; }
+        .message { margin: 5px 0; padding: 5px; border-radius: 5px; }
+        .sent { background: #e3f2fd; text-align: right; }
+        .received { background: #f5f5f5; }
+        .active-user { 
+            padding: 5px; 
+            margin: 5px 0; 
+            background: #f0f0f0; 
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .system-message { 
+            color: #666; 
+            font-style: italic; 
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h2>Socket.IO Test Sayfası</h2>
+        <div>
+            <label>JWT Token:</label>
+            <input type="text" id="token" style="width: 300px;">
+            <button onclick="connect()">Bağlan</button>
+        </div>
+        <br>
+        <div>
+            <label>Alıcı ID:</label>
+            <input type="text" id="receiverId">
+        </div>
+        <div id="messages"></div>
+        <div id="form">
+            <input type="text" id="input" placeholder="Mesajınızı yazın...">
+            <button onclick="sendMessage()">Gönder</button>
+        </div>
+        <div>
+            <strong>Aktif Kullanıcılar:</strong>
+            <div id="activeUsers"></div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+        const messagesDiv = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const receiverInput = document.getElementById('receiverId');
+
+        function connect() {
+            const token = document.getElementById('token').value;
+            
+            socket = io('http://localhost:3000', {
+                auth: { token }
+            });
+
+            socket.on('connect', () => {
+                console.log('Bağlantı kuruldu');
+                addSystemMessage('Bağlantı kuruldu');
+            });
+
+            socket.on('activeUsers', (users) => {
+                const activeUsersDiv = document.getElementById('activeUsers');
+                activeUsersDiv.innerHTML = '';
+                users.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'active-user';
+                    userDiv.textContent = `${user.name} (${user.email})`;
+                    userDiv.onclick = () => {
+                        receiverInput.value = user.id;
+                    };
+                    activeUsersDiv.appendChild(userDiv);
+                });
+            });
+
+            socket.on('newMessage', (message) => {
+                console.log('Yeni mesaj alındı:', message);
+                const messageData = message.data[0];
+                addMessage(messageData.sender.email, messageData.content, 'received');
+            });
+
+            socket.on('messageSent', (message) => {
+                console.log('Mesaj gönderildi:', message);
+                const messageData = message.data[0];
+                addMessage('Ben', messageData.content, 'sent');
+            });
+
+            socket.on('messageError', (error) => {
+                console.error('Mesaj hatası:', error);
+                addSystemMessage('Hata: ' + error.message);
+            });
+
+            socket.on('userTyping', (data) => {
+                addSystemMessage(`${data.name} yazıyor...`);
+                // 3 saniye sonra yazıyor mesajını kaldır
+                setTimeout(() => {
+                    removeSystemMessage(`${data.name} yazıyor...`);
+                }, 3000);
+            });
+
+            socket.on('disconnect', () => {
+                addSystemMessage('Bağlantı kesildi');
+            });
+
+            // Yazma durumunu kontrol et
+            let typingTimeout;
+            input.addEventListener('input', () => {
+                if (receiverInput.value) {
+                    clearTimeout(typingTimeout);
+                    socket.emit('typing', { receiverId: receiverInput.value });
+                    typingTimeout = setTimeout(() => {
+                        socket.emit('stopTyping', { receiverId: receiverInput.value });
+                    }, 2000);
+                }
+            });
+        }
+
+        function sendMessage() {
+            const content = input.value.trim();
+            const receiverId = receiverInput.value;
+
+            if (!content || !receiverId) {
+                addSystemMessage('Lütfen mesaj ve alıcı ID girin');
+                return;
+            }
+
+            console.log('Mesaj gönderiliyor:', { receiverId, content });
+            socket.emit('sendMessage', {
+                receiverId,
+                content
+            });
+
+            input.value = '';
+        }
+
+        function addMessage(sender, content, type = '') {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = `${sender}: ${content}`;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addSystemMessage(content) {
+            const div = document.createElement('div');
+            div.className = 'message system-message';
+            div.textContent = content;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function removeSystemMessage(content) {
+            const messages = messagesDiv.getElementsByClassName('system-message');
+            for (let msg of messages) {
+                if (msg.textContent === content) {
+                    msg.remove();
+                    break;
+                }
+            }
+        }
+
+        // Enter tuşu ile mesaj gönderme
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html> 

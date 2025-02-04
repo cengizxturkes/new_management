@@ -108,11 +108,10 @@ export const configureSocket = (server: HTTPServer) => {
     });
 
     // Mesaj gönderme
-    socket.on('sendMessage', async (data: { receiverId: string; content: string }) => {
+    socket.on('sendMessage', async (data) => {
       try {
         const { receiverId, content } = data;
         
-        // Mesajı veritabanına kaydet
         const message = await Message.create({
           sender: socket.data.user._id,
           receiver: receiverId,
@@ -120,30 +119,45 @@ export const configureSocket = (server: HTTPServer) => {
           read: false
         });
 
-        // Mesajı alıcının odasına gönder
-        io.to(receiverId).emit('newMessage', {
-          _id: message._id,
-          sender: {
-            _id: socket.data.user._id,
-            name: socket.data.user.name,
-            email: socket.data.user.email
-          },
-          content,
-          createdAt: message.createdAt,
-          read: false
-        });
-
-        // Gönderene de mesajın başarıyla gönderildiğini bildir
-        socket.emit('messageSent', {
-          _id: message._id,
-          receiver: receiverId,
-          content,
-          createdAt: message.createdAt
-        });
-
+        // Alıcının socket ID'sini bul
+        const receiverSocketId = activeUsers.get(receiverId)?.socketId;
+    
+        // Flutter modeline uygun mesaj objesi
+        const messageResponse = {
+          status: "success",
+          data: [{
+            _id: message._id,
+            sender: {
+              _id: socket.data.user._id,
+              email: socket.data.user.email
+            },
+            receiver: {
+              _id: receiverId,
+              email: activeUsers.get(receiverId)?.email || ""
+            },
+            content: message.content,
+            read: message.read,
+            createdAt: message.createdAt.toISOString(),
+            updatedAt: message.updatedAt.toISOString(),
+            __v: 0
+          }]
+        };
+    
+        // Mesajı alıcıya gönder
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit('newMessage', messageResponse);
+        }
+    
+        // Mesajın gönderildiğini gönderen kullanıcıya bildir
+        socket.emit('messageSent', messageResponse);
+    
+        console.log(`📩 Mesaj gönderildi: ${content}`);
       } catch (error) {
         console.error('Mesaj gönderme hatası:', error);
-        socket.emit('messageError', { message: 'Mesaj gönderilemedi' });
+        socket.emit('messageError', { 
+          status: "error",
+          message: 'Mesaj gönderilemedi' 
+        });
       }
     });
 

@@ -49,13 +49,30 @@ export const getMessagesBetweenUsers = catchAsync(async (req: Request, res: Resp
       { sender: userId, receiver: req.user._id }
     ]
   })
-  .populate('sender', 'name email')
-  .populate('receiver', 'name email')
-  .sort('createdAt');
+  .populate<{ sender: { _id: string; email: string } }>('sender', 'email')
+  .populate<{ receiver: { _id: string; email: string } }>('receiver', 'email')
+  .sort('-createdAt');
+
+  const formattedMessages = messages.map(msg => ({
+    _id: msg._id,
+    sender: {
+      _id: msg.sender._id,
+      email: msg.sender.email
+    },
+    receiver: {
+      _id: msg.receiver._id,
+      email: msg.receiver.email
+    },
+    content: msg.content,
+    read: msg.read,
+    createdAt: msg.createdAt.toISOString(),
+    updatedAt: msg.updatedAt.toISOString(),
+    __v: msg.__v
+  }));
 
   res.status(200).json({
-    status: 'success',
-    data: messages
+    status: "success",
+    data: formattedMessages
   });
 });
 
@@ -323,6 +340,31 @@ export const getMessageMaster = catchAsync(async (req: Request, res: Response) =
       lastDayStats: lastDayStats[0] || { sentCount: 0, receivedCount: 0 },
       onlineUsers,
       archivedConversations
+    }
+  });
+});
+
+// İki kullanıcı arasındaki tüm okunmamış mesajları okundu olarak işaretle
+export const markAllMessagesAsRead = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  // Sadece alıcısı olduğumuz ve okunmamış mesajları güncelle
+  const result = await Message.updateMany(
+    {
+      sender: userId,
+      receiver: req.user._id,
+      read: false
+    },
+    {
+      $set: { read: true }
+    }
+  );
+
+  res.status(200).json({
+    status: "success",
+    message: "Tüm mesajlar okundu olarak işaretlendi",
+    data: {
+      modifiedCount: result.modifiedCount
     }
   });
 }); 
