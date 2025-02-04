@@ -34,6 +34,13 @@ export const getAllCustomers = catchAsync(async (req: Request, res: Response): P
     .skip(skip)
     .limit(limit);
 
+  // pictureB64 null veya undefined ise boş string olarak ayarla
+  const formattedCustomers = customers.map(customer => {
+    const customerObj = customer.toObject();
+    customerObj.pictureB64 = customerObj.pictureB64 || '';
+    return customerObj;
+  });
+
   // Pagination meta verisi
   const totalPages = Math.ceil(total / limit);
   const hasNextPage = page < totalPages;
@@ -44,7 +51,7 @@ export const getAllCustomers = catchAsync(async (req: Request, res: Response): P
       .success(true)
       .withMessage('Müşteriler başarıyla getirildi')
       .withData({
-        customers,
+        customers: formattedCustomers,
         pagination: {
           total,
           page,
@@ -75,8 +82,10 @@ export const getCustomer = catchAsync(async (req: Request, res: Response): Promi
 
   // createdPersonName oluştur
   const createdPerson = await User.findById(customer.createdPersonId);
+  const customerObj = customer.toObject();
+  customerObj.pictureB64 = customerObj.pictureB64 || '';
   const responseData = {
-    ...customer.toObject(),
+    ...customerObj,
     createdPersonName: createdPerson ? `${createdPerson.firstName} ${createdPerson.lastName}` : 'Bilinmiyor'
   };
 

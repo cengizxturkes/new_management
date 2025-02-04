@@ -218,7 +218,8 @@ const options = {
             },
             pictureB64: {
               type: 'string',
-              description: 'Base64 formatında profil fotoğrafı'
+              description: 'Base64 formatında veri',
+              nullable: true
             },
             notes: {
               type: 'string',
@@ -403,6 +404,7 @@ const options = {
             surname: "Yılmaz",
             gender: 1,
             birthDate: "1990-01-01",
+            pictureB64: "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
             customerType: "individual",
             customerAddresses: [
               {

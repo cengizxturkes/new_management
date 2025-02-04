@@ -14,6 +14,179 @@ import {
  *   name: Customers
  *   description: Müşteri yönetimi işlemleri
  * 
+ * @swagger
+ * components:
+ *   schemas:
+ *     CustomerAddress:
+ *       type: object
+ *       required:
+ *         - phoneNumber
+ *         - email
+ *         - addressText
+ *         - addressCountryId
+ *         - addressCityId
+ *         - addressDistrictId
+ *         - postalZone
+ *       properties:
+ *         phoneNumber:
+ *           type: string
+ *           description: Telefon numarası (10 haneli)
+ *         secondaryPhoneNumber:
+ *           type: string
+ *           description: İkincil telefon numarası
+ *         faxNumber:
+ *           type: string
+ *           description: Faks numarası
+ *         email:
+ *           type: string
+ *           description: E-posta adresi
+ *         addressText:
+ *           type: string
+ *           description: Açık adres
+ *         addressCountryId:
+ *           type: string
+ *           description: Ülke ID
+ *         addressCityId:
+ *           type: string
+ *           description: Şehir ID
+ *         addressDistrictId:
+ *           type: string
+ *           description: İlçe ID
+ *         buildingName:
+ *           type: string
+ *           description: Bina adı
+ *         buildingNumber:
+ *           type: string
+ *           description: Bina numarası
+ *         postalZone:
+ *           type: string
+ *           description: Posta kodu
+ *         latitude:
+ *           type: number
+ *           description: Enlem
+ *         longitude:
+ *           type: number
+ *           description: Boylam
+ *     Customer:
+ *       type: object
+ *       required:
+ *         - citizenType
+ *         - identityNumber
+ *         - citizenCountryId
+ *         - name
+ *         - surname
+ *         - gender
+ *         - birthDate
+ *         - customerType
+ *         - customerAddresses
+ *       properties:
+ *         citizenType:
+ *           type: number
+ *           enum: [1, 2]
+ *           description: 1 - Yerli, 2 - Yabancı
+ *         identityNumber:
+ *           type: string
+ *           description: TC Kimlik No veya Yabancı Kimlik No
+ *         citizenCountryId:
+ *           type: string
+ *           description: Vatandaşlık ülkesi ID'si
+ *         name:
+ *           type: string
+ *           description: Müşteri adı
+ *         surname:
+ *           type: string
+ *           description: Müşteri soyadı
+ *         gender:
+ *           type: number
+ *           enum: [1, 2]
+ *           description: 1 - Erkek, 2 - Kadın
+ *         birthDate:
+ *           type: string
+ *           format: date
+ *           description: Doğum tarihi
+ *         pictureB64:
+ *           type: string
+ *           description: Base64 formatında profil fotoğrafı (data:image ile başlamalı)
+ *         notes:
+ *           type: string
+ *           description: Notlar
+ *         eInvoiceType:
+ *           type: number
+ *           enum: [0, 1, 2]
+ *           description: E-Fatura tipi
+ *         eInvoiceIdentityType:
+ *           type: number
+ *           enum: [0, 1, 2]
+ *           description: E-Fatura kimlik tipi
+ *         taxNumber:
+ *           type: string
+ *           description: Vergi numarası
+ *         taxPlace:
+ *           type: string
+ *           description: Vergi dairesi
+ *         companyTitle:
+ *           type: string
+ *           description: Firma ünvanı
+ *         customerType:
+ *           type: string
+ *           enum: [individual, corporate]
+ *           description: Müşteri tipi
+ *         loyaltyLevel:
+ *           type: string
+ *           enum: [bronze, silver, gold, platinum]
+ *           description: Sadakat seviyesi
+ *         creditLimit:
+ *           type: number
+ *           description: Kredi limiti
+ *         outstandingBalance:
+ *           type: number
+ *           description: Bakiye
+ *         contractStartDate:
+ *           type: string
+ *           format: date
+ *           description: Sözleşme başlangıç tarihi
+ *         contractEndDate:
+ *           type: string
+ *           format: date
+ *           description: Sözleşme bitiş tarihi
+ *         contractTerms:
+ *           type: string
+ *           description: Sözleşme şartları
+ *         vatNumber:
+ *           type: string
+ *           description: KDV numarası
+ *         legalEntityType:
+ *           type: string
+ *           description: Tüzel kişilik tipi
+ *         lastContactDate:
+ *           type: string
+ *           format: date
+ *           description: Son iletişim tarihi
+ *         preferredContactMethod:
+ *           type: string
+ *           enum: [email, phone, sms]
+ *           description: Tercih edilen iletişim yöntemi
+ *         attachments:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               fileName:
+ *                 type: string
+ *               fileType:
+ *                 type: string
+ *               fileSize:
+ *                 type: number
+ *           description: Ekler
+ *         additionalNotes:
+ *           type: string
+ *           description: Ek notlar
+ *         customerAddresses:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/CustomerAddress'
+ *           description: Müşteri adresleri
+ * 
  * /api/customers:
  *   get:
  *     summary: Tüm müşterileri listeler (Pagination ile)

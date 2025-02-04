@@ -137,7 +137,9 @@ const CustomerSchema = new Schema({
     type: Date,
     required: [true, 'Doğum tarihi zorunludur']
   },
-  pictureB64: String,
+  pictureB64: {
+    type: String
+  },
   notes: String,
   createdPersonId: {
     type: Schema.Types.ObjectId,
