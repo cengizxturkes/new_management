@@ -6,9 +6,11 @@
     "scripts": {
         "start": "ts-node src/index.ts",
         "dev": "nodemon src/index.ts",
-        "build": "tsc"
+        "build": "tsc",
+        "seed:test": "ts-node src/utils/seedTestData.ts"
     },
     "dependencies": {
+        "@faker-js/faker": "^9.4.0",
         "@types/moment": "^2.11.29",
         "@types/socket.io": "^3.0.1",
         "bcryptjs": "^2.4.3",

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { catchAsync } from '../utils/catchAsync';
 import AppError from '../utils/appError';
 import Appointment from '../models/Appointment';
-import Resource, { IResource } from '../models/Resource';
+import Resource, { IResource, IResourceUser } from '../models/Resource';
 import AvailableSlot from '../models/AvailableSlot';
 
 import { ICustomer } from '../models/Customer';
@@ -128,9 +128,52 @@ export const getAppointments = catchAsync(async (req: Request, res: Response) =>
     .sort({ startTime: -1 })
     .skip((Number(page) - 1) * Number(limit))
     .limit(Number(limit))
-    .populate('resourceId', 'resourceName active appointmentActive')
+    .populate('resourceId', 'resourceName active appointmentActive userId')
+    .populate({
+      path: 'resourceId',
+      populate: {
+        path: 'userId',
+        select: 'firstName lastName email phoneNumber pictureB64'
+      }
+    })
     .populate('customerId', 'firstName lastName email phoneNumber')
     .populate('createdBy', 'firstName lastName');
+
+  // pictureB64 null veya undefined ise boş string olarak ayarla
+  const formattedAppointments = appointments.map(appointment => {
+    const appointmentObj = appointment.toObject();
+    const resource = appointmentObj.resourceId as IResource;
+    
+    // Resource'un userId'si yoksa veya populate edilmemişse
+    if (!resource?.userId) {
+      return {
+        ...appointmentObj,
+        resourceId: {
+          ...resource,
+          userId: {
+            pictureB64: ""
+          } as IResourceUser
+        }
+      };
+    }
+
+    // Resource'un userId'si varsa ve populate edilmişse
+    if (typeof resource.userId === 'object') {
+      const user = resource.userId as IResourceUser;
+      return {
+        ...appointmentObj,
+        resourceId: {
+          ...resource,
+          userId: {
+            ...user,
+            pictureB64: user.pictureB64 || ""
+          } as IResourceUser
+        }
+      };
+    }
+
+    return appointmentObj;
+  });
 
   res.status(200).json({
     status: 'success',
@@ -138,7 +181,7 @@ export const getAppointments = catchAsync(async (req: Request, res: Response) =>
       total,
       page: Number(page),
       totalPages: Math.ceil(total / Number(limit)),
-      appointments
+      appointments: formattedAppointments
     }
   });
 });
@@ -162,7 +205,7 @@ export const getAppointmentDetails = catchAsync(async (req: Request, res: Respon
       populate: [
         {
           path: 'userId',
-          select: 'firstName lastName email phoneNumber role'
+          select: 'firstName lastName email phoneNumber pictureB64 role'
         },
         {
           path: 'branchId',
@@ -188,6 +231,31 @@ export const getAppointmentDetails = catchAsync(async (req: Request, res: Respon
     return next(new AppError('Randevu bulunamadı', 404));
   }
 
+  // pictureB64 null veya undefined ise boş string olarak ayarla
+  const appointmentObj = appointment.toObject();
+  const resource = appointmentObj.resourceId as IResource;
+  
+  // Resource'un userId'si yoksa veya populate edilmemişse
+  if (!resource?.userId) {
+    appointmentObj.resourceId = {
+      ...resource,
+      userId: {
+        pictureB64: ""
+      } as IResourceUser
+    } as IResource;
+  }
+  // Resource'un userId'si varsa ve populate edilmişse
+  else if (typeof resource.userId === 'object') {
+    const user = resource.userId as IResourceUser;
+    appointmentObj.resourceId = {
+      ...resource,
+      userId: {
+        ...user,
+        pictureB64: user.pictureB64 || ""
+      } as IResourceUser
+    } as IResource;
+  }
+
   // Debug için appointment ve customer bilgilerini detaylı logla
   console.log('Randevu ve müşteri detayları:', {
     appointmentId: appointment._id,
@@ -204,7 +272,7 @@ export const getAppointmentDetails = catchAsync(async (req: Request, res: Respon
   res.status(200).json({
     status: 'success',
     data: {
-      appointment
+      appointment: appointmentObj
     }
   });
 });

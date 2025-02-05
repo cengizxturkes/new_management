@@ -1,5 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export interface IResourceUser {
+  _id?: Schema.Types.ObjectId;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: {
+    countryCode: string;
+    number: string;
+  };
+  pictureB64?: string;
+  role?: string;
+}
+
 export interface IResource extends Document {
   branchId: Schema.Types.ObjectId;
   active: boolean;
@@ -10,7 +23,7 @@ export interface IResource extends Document {
   createdPersonId: Schema.Types.ObjectId;
   createdBranchId: Schema.Types.ObjectId;
   isDeleted: boolean;
-  userId?: Schema.Types.ObjectId;
+  userId?: Schema.Types.ObjectId | IResourceUser;
 }
 
 const ResourceSchema = new Schema({
