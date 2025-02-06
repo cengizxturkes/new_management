@@ -32,6 +32,24 @@ router.delete('/:id', deleteTreatment);
  *   get:
  *     summary: Tüm tedavileri listeler
  *     tags: [Treatments]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Sayfa numarası (varsayılan 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Sayfa başına kayıt sayısı (varsayılan 10)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Tedavi adı veya kodu ile arama yapar
  *     responses:
  *       200:
  *         description: Tedaviler başarıyla getirildi

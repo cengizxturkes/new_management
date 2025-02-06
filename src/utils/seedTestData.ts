@@ -107,23 +107,23 @@ const seedTestData = async () => {
 
     // Şubeleri oluştur
     const branches = await Branch.create(
-      Array(TOTAL_BRANCHES).fill(null).map((_, index) => ({
-        branchName: `${faker.company.name()} Şube ${index + 1}`,
-        branchType: 0,
-        defaultCurrencyId: currencies[0]._id,
-        defaultPriceListId: priceLists[0]._id,
-        phoneNumber: generatePhoneNumber(),
-        email: faker.internet.email(),
-        addressText: faker.location.streetAddress(),
-        addressCountryId: 'TR',
-        addressCityId: faker.string.numeric(2),
-        addressDistrictId: faker.string.numeric(4),
-        postalZone: faker.location.zipCode(),
-        managerPersonId: admin._id,
-        createdPersonId: admin._id,
-        companyId: 'MAIN',
-        isActive: true
-      }))
+      Array(TOTAL_BRANCHES).fill(null).map((_, index) => {
+        const phoneNumber = generatePhoneNumber();
+        return {
+          branchName: `${faker.company.name()} Şube ${index + 1}`,
+          branchType: 0,
+          defaultCurrencyId: currencies[0]._id,
+          defaultPriceListId: priceLists[0]._id,
+          phone: `+90${phoneNumber.number}`,
+          phoneNumber: phoneNumber,
+          email: faker.internet.email(),
+          address: faker.location.streetAddress(),
+          managerPersonId: admin._id,
+          createdPersonId: admin._id,
+          companyId: 'MAIN',
+          isActive: true
+        };
+      })
     );
     console.log(`${TOTAL_BRANCHES} şube oluşturuldu`);
 

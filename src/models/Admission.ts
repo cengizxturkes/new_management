@@ -6,6 +6,20 @@ interface IAttachment {
   fileSize: number;
 }
 
+export interface IAdmissionTreatment {
+  admissionId: Schema.Types.ObjectId;
+  treatmentId: Schema.Types.ObjectId;
+  treatmentDate: Date;
+  quantity: number;
+  storageId: Schema.Types.ObjectId;
+  createdPersonId: Schema.Types.ObjectId;
+  createdBranchId: Schema.Types.ObjectId;
+  personId: Schema.Types.ObjectId;
+  customPrice: number;
+  autoApplyCampaign: boolean;
+  autoApplyCoupon: boolean;
+}
+
 export interface IAdmission extends Document {
   branchId: Schema.Types.ObjectId;
   admissionDate: Date;
@@ -24,6 +38,7 @@ export interface IAdmission extends Document {
   followUpDate?: Date;
   attachments?: IAttachment[];
   isActive: boolean;
+  admissionTreatments: IAdmissionTreatment[];
 }
 
 const AttachmentSchema = new Schema({
@@ -103,7 +118,59 @@ const AdmissionSchema = new Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
+  },
+  admissionTreatments: [{
+    admissionId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Admission',
+      required: true
+    },
+    treatmentId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Treatment',
+      required: true
+    },
+    treatmentDate: {
+      type: Date,
+      required: true
+    },
+    quantity: {
+      type: Number,
+      default: 0
+    },
+    storageId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Storage',
+      required: true
+    },
+    createdPersonId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    createdBranchId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Branch',
+      required: true
+    },
+    personId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    customPrice: {
+      type: Number,
+      default: 0
+    },
+    autoApplyCampaign: {
+      type: Boolean,
+      default: true
+    },
+    autoApplyCoupon: {
+      type: Boolean,
+      default: true
+    }
+  }]
 }, {
   timestamps: true
 });

@@ -568,6 +568,10 @@ const options = {
             onlineAppointmentActive: {
               type: 'boolean',
               description: 'Online randevu aktif mi?'
+            },
+            treatmentPictureb64: {
+              type: 'string',
+              description: 'Tedavi resmi Base64 formatında'
             }
           },
           example: {
@@ -587,7 +591,8 @@ const options = {
             barcode: '1234567890123',
             treatmentCode: 'FT123',
             expireDateRequired: true,
-            onlineAppointmentActive: true
+            onlineAppointmentActive: true,
+            treatmentPictureb64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
           }
         }
       },

@@ -7,6 +7,7 @@ import { specs } from './config/swagger';
 import userRoutes from './routes/userRoutes';
 import branchRoutes from './routes/branchRoutes';
 import { seedInitialData } from './utils/seedData';
+
 import locationRoutes from './routes/locationRoutes';
 import priceListRoutes from './routes/priceListRoutes';
 import currencyRoutes from './routes/currencyRoutes';
@@ -19,6 +20,7 @@ import { createServer } from 'http';
 import { configureSocket } from './config/socket';
 import unitRoutes from './routes/unitRoutes';
 import treatmentRoutes from './routes/treatmentRoutes';
+import admissionTreatmentRoutes from './routes/admissionTreatmentRoutes';
 
 dotenv.config();
 
@@ -53,6 +55,7 @@ app.use('/api/admissions', admissionRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/units', unitRoutes);
 app.use('/api/treatments', treatmentRoutes);
+app.use('/api/admission-treatments', admissionTreatmentRoutes);
 
 const httpServer = createServer(app);
 export const io = configureSocket(httpServer);
@@ -67,6 +70,7 @@ const startServer = async () => {
     try {
       // Başlangıç verilerini oluştur
       await seedInitialData();
+
       
       const PORT = process.env.PORT || 3000;
       httpServer.listen(PORT, () => {

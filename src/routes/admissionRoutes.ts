@@ -5,7 +5,9 @@ import {
   getAdmissions,
   getAdmissionDetails,
   updateAdmission,
-  deleteAdmission
+  deleteAdmission,
+  getAdmissionTreatments,
+  createAdmissionTreatment
 } from '../controllers/admissionController';
 
 /**
@@ -267,6 +269,102 @@ import {
  *                 message:
  *                   type: string
  *                   example: Başvuru başarıyla silindi
+ * 
+ * /api/admissions/{id}/treatments:
+ *   get:
+ *     summary: Başvuruya ait işlemleri listeler
+ *     tags: [Admissions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Başvuru işlemleri başarıyla listelendi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/AdmissionTreatment'
+ *   post:
+ *     summary: Başvuruya yeni işlem ekler
+ *     tags: [Admissions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - admissionId
+ *               - treatmentId
+ *               - treatmentDate
+ *               - quantity
+ *               - storageId
+ *               - createdPersonId
+ *               - createdBranchId
+ *               - personId
+ *             properties:
+ *               admissionId:
+ *                 type: string
+ *                 description: Başvuru ID'si
+ *               treatmentId:
+ *                 type: string
+ *                 description: Tedavi ID'si
+ *               treatmentDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Tedavi tarihi
+ *               quantity:
+ *                 type: number
+ *                 description: Miktar
+ *               storageId:
+ *                 type: string
+ *                 description: Depo ID'si
+ *               createdPersonId:
+ *                 type: string
+ *                 description: Oluşturan personel ID'si
+ *               createdBranchId:
+ *                 type: string
+ *                 description: Oluşturan şube ID'si
+ *               personId:
+ *                 type: string
+ *                 description: İşlemi yapan personel ID'si
+ *               customPrice:
+ *                 type: number
+ *                 description: Özel fiyat
+ *               autoApplyCampaign:
+ *                 type: boolean
+ *                 description: Kampanya otomatik uygulansın mı?
+ *               autoApplyCoupon:
+ *                 type: boolean
+ *                 description: Kupon otomatik uygulansın mı?
+ *     responses:
+ *       201:
+ *         description: Başvuru işlemi başarıyla eklendi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/AdmissionTreatment'
  */
 
 const router = express.Router();
@@ -281,5 +379,9 @@ router.route('/:id')
   .get(getAdmissionDetails)
   .patch(updateAdmission)
   .delete(deleteAdmission);
+
+router.route('/:id/treatments')
+  .get(getAdmissionTreatments)
+  .post(createAdmissionTreatment);
 
 export default router; 

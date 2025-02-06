@@ -9,11 +9,8 @@ const defaultBranch = {
   branchName: 'Ana Şube',
   branchType: 0,
   email: 'anasube@sistem.com',
-  addressText: 'Atatürk Caddesi No: 123',
-  addressCountryId: 'TR',
-  addressCityId: '34',
-  addressDistrictId: '1234',
-  postalZone: '34700',
+  address: 'Atatürk Caddesi No: 123',
+  phone: '+902165555555',
   phoneNumber: {
     countryCode: '+90',
     number: '2165555555'
@@ -160,7 +157,7 @@ export const seedInitialData = async (): Promise<void> => {
         managerPersonId: adminUser._id,
         createdPersonId: adminUser._id
       });
-      console.log('Ana şube oluşturuldu:', mainBranch.branchName);
+
 
       // PriceList'i güncelle
       await PriceList.findByIdAndUpdate(mainPriceList._id, {

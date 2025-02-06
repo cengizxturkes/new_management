@@ -3,6 +3,7 @@ import { catchAsync } from '../utils/catchAsync';
 import AppError from '../utils/appError';
 import Admission from '../models/Admission';
 import Appointment from '../models/Appointment';
+import { ApiResponseBuilder } from '../interfaces/ApiResponse';
 
 // Başvuru oluşturma
 export const createAdmission = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -230,4 +231,105 @@ export const deleteAdmission = catchAsync(async (req: Request, res: Response, ne
     status: 'success',
     message: 'Başvuru başarıyla silindi'
   });
+});
+
+export const addAdmissionTreatment = catchAsync(async (req: Request, res: Response): Promise<void> => {
+  const { admissionId, treatmentId, treatmentDate, quantity, storageId, createdPersonId, createdBranchId, personId, customPrice, autoApplyCampaign, autoApplyCoupon } = req.body;
+
+  const admission = await Admission.findById(admissionId);
+  if (!admission) {
+    res.status(404).json(
+      new ApiResponseBuilder()
+        .success(false)
+        .withMessage('Başvuru bulunamadı')
+        .build()
+    );
+    return;
+  }
+
+  const newTreatment = {
+    admissionId,
+    treatmentId,
+    treatmentDate,
+    quantity,
+    storageId,
+    createdPersonId,
+    createdBranchId,
+    personId,
+    customPrice,
+    autoApplyCampaign,
+    autoApplyCoupon
+  };
+
+  admission.admissionTreatments.push(newTreatment);
+  await admission.save();
+
+  res.status(201).json(
+    new ApiResponseBuilder()
+      .success(true)
+      .withMessage('Başvuru işlemi başarıyla eklendi')
+      .withData(newTreatment)
+      .build()
+  );
+});
+
+export const getAdmissionTreatments = catchAsync(async (req: Request, res: Response): Promise<void> => {
+  const admission = await Admission.findById(req.params.id);
+  if (!admission) {
+    res.status(404).json(
+      new ApiResponseBuilder()
+        .success(false)
+        .withMessage('Başvuru bulunamadı')
+        .build()
+    );
+    return;
+  }
+
+  res.status(200).json(
+    new ApiResponseBuilder()
+      .success(true)
+      .withMessage('Başvuru işlemleri başarıyla getirildi')
+      .withData(admission.admissionTreatments)
+      .build()
+  );
+});
+
+export const createAdmissionTreatment = catchAsync(async (req: Request, res: Response): Promise<void> => {
+  const { admissionId, treatmentId, treatmentDate, quantity, storageId, createdPersonId, createdBranchId, personId, customPrice, autoApplyCampaign, autoApplyCoupon } = req.body;
+
+  const admission = await Admission.findById(admissionId);
+  if (!admission) {
+    res.status(404).json(
+      new ApiResponseBuilder()
+        .success(false)
+        .withMessage('Başvuru bulunamadı')
+        .build()
+    );
+    return;
+  }
+
+  const newTreatment = {
+    admissionId,
+    treatmentId,
+    treatmentDate,
+    quantity,
+    storageId,
+    createdPersonId,
+    createdBranchId,
+    personId,
+    customPrice,
+    autoApplyCampaign,
+    autoApplyCoupon
+  };
+
+  admission.admissionTreatments.push(newTreatment);
+  await admission.save();
+
+  res.status(201).json(
+    new ApiResponseBuilder()
+      .success(true)
+      .withMessage('Başvuru işlemi başarıyla eklendi')
+      .withData(newTreatment)
+      .build()
+  );
 }); 
