@@ -30,6 +30,14 @@ const options = {
       {
         name: 'Messages',
         description: 'Mesaj işlemleri'
+      },
+      {
+        name: 'Units',
+        description: 'Birim yönetimi işlemleri'
+      },
+      {
+        name: 'Treatments',
+        description: 'Tedavi yönetimi işlemleri'
       }
     ],
     components: {
@@ -218,7 +226,7 @@ const options = {
             },
             pictureB64: {
               type: 'string',
-              description: 'Base64 formatında veri',
+              description: 'Base64 formatında profil fotoğrafı (data:image ile başlamalı)',
               nullable: true
             },
             notes: {
@@ -404,7 +412,6 @@ const options = {
             surname: "Yılmaz",
             gender: 1,
             birthDate: "1990-01-01",
-            pictureB64: "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
             customerType: "individual",
             customerAddresses: [
               {
@@ -452,6 +459,135 @@ const options = {
               format: 'date-time',
               description: 'Mesajın oluşturulma tarihi'
             }
+          }
+        },
+        Unit: {
+          type: 'object',
+          properties: {
+            isDefault: {
+              type: 'boolean',
+              description: 'Varsayılan birim mi?'
+            },
+            unitName: {
+              type: 'string',
+              description: 'Birim adı'
+            },
+            createdPersonId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Oluşturan kullanıcı ID'
+            },
+            createdBranchId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Oluşturan şube ID'
+            }
+          },
+          example: {
+            isDefault: true,
+            unitName: 'Adet',
+            createdPersonId: '60d5ecb8b5c9c62b3c7c1b5f',
+            createdBranchId: '678dc24d31735be6836089b9'
+          }
+        },
+        Treatment: {
+          type: 'object',
+          properties: {
+            active: {
+              type: 'boolean',
+              description: 'Tedavi aktif mi?'
+            },
+            treatmentName: {
+              type: 'string',
+              description: 'Tedavi adı'
+            },
+            categoryId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Kategori ID'
+            },
+            treatmentType: {
+              type: 'number',
+              description: 'Tedavi tipi'
+            },
+            processTimeInMinutes: {
+              type: 'number',
+              description: 'İşlem süresi (dakika)'
+            },
+            intervalDays: {
+              type: 'number',
+              description: 'Aralık gün sayısı'
+            },
+            allBranches: {
+              type: 'boolean',
+              description: 'Tüm şubelerde geçerli mi?'
+            },
+            taxRate: {
+              type: 'number',
+              description: 'Vergi oranı'
+            },
+            createdPersonId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Oluşturan kullanıcı ID'
+            },
+            createdBranchId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Oluşturan şube ID'
+            },
+            itemTransactionActive: {
+              type: 'boolean',
+              description: 'Ürün işlemi aktif mi?'
+            },
+            mainItemUnitId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Ana ürün birim ID'
+            },
+            branchIds: {
+              type: 'array',
+              items: {
+                type: 'string',
+                format: 'uuid'
+              },
+              description: 'Geçerli olduğu şube IDleri'
+            },
+            barcode: {
+              type: 'string',
+              description: 'Barkod'
+            },
+            treatmentCode: {
+              type: 'string',
+              description: 'Tedavi kodu'
+            },
+            expireDateRequired: {
+              type: 'boolean',
+              description: 'Son kullanma tarihi gerekli mi?'
+            },
+            onlineAppointmentActive: {
+              type: 'boolean',
+              description: 'Online randevu aktif mi?'
+            }
+          },
+          example: {
+            active: true,
+            treatmentName: 'Fizik Tedavi',
+            categoryId: '60d5ecb8b5c9c62b3c7c1b5f',
+            treatmentType: 0,
+            processTimeInMinutes: 60,
+            intervalDays: 30,
+            allBranches: true,
+            taxRate: 18,
+            createdPersonId: '60d5ecb8b5c9c62b3c7c1b5f',
+            createdBranchId: '678dc24d31735be6836089b9',
+            itemTransactionActive: true,
+            mainItemUnitId: '60d5ecb8b5c9c62b3c7c1b5f',
+            branchIds: ['678dc24d31735be6836089b9'],
+            barcode: '1234567890123',
+            treatmentCode: 'FT123',
+            expireDateRequired: true,
+            onlineAppointmentActive: true
           }
         }
       },

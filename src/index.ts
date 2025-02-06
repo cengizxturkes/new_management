@@ -17,6 +17,8 @@ import admissionRoutes from './routes/admissionRoutes';
 import messageRoutes from './routes/messageRoutes';
 import { createServer } from 'http';
 import { configureSocket } from './config/socket';
+import unitRoutes from './routes/unitRoutes';
+import treatmentRoutes from './routes/treatmentRoutes';
 
 dotenv.config();
 
@@ -48,7 +50,9 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admissions', admissionRoutes);
-app.use('/api/messages', messageRoutes); 
+app.use('/api/messages', messageRoutes);
+app.use('/api/units', unitRoutes);
+app.use('/api/treatments', treatmentRoutes);
 
 const httpServer = createServer(app);
 export const io = configureSocket(httpServer);
