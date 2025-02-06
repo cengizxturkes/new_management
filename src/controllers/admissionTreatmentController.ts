@@ -22,8 +22,7 @@ export const getAdmissionTreatments = catchAsync(async (_req: Request, res: Resp
     .populate('treatmentId')
     .populate('storageId')
     .populate('createdPersonId')
-    .populate('createdBranchId')
-    .populate('personId');
+    .populate('createdBranchId');
 
   res.status(200).json({
     status: 'success',
@@ -44,8 +43,7 @@ export const getAdmissionTreatmentById = catchAsync(async (req: Request, res: Re
     .populate('treatmentId')
     .populate('storageId')
     .populate('createdPersonId')
-    .populate('createdBranchId')
-    .populate('personId');
+    .populate('createdBranchId');
 
   if (!admissionTreatment) {
     throw new AppError('Bu ID ile tedavi bulunamadı', 404);
@@ -69,8 +67,7 @@ export const getAdmissionTreatmentsByAdmissionId = catchAsync(async (req: Reques
     .populate('treatmentId')
     .populate('storageId')
     .populate('createdPersonId')
-    .populate('createdBranchId')
-    .populate('personId');
+    .populate('createdBranchId');
 
   res.status(200).json({
     status: 'success',
@@ -95,8 +92,7 @@ export const updateAdmissionTreatment = catchAsync(async (req: Request, res: Res
     .populate('treatmentId')
     .populate('storageId')
     .populate('createdPersonId')
-    .populate('createdBranchId')
-    .populate('personId');
+    .populate('createdBranchId');
 
   if (!admissionTreatment) {
     throw new AppError('Bu ID ile tedavi bulunamadı', 404);

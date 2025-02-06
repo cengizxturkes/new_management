@@ -8,7 +8,6 @@ export interface IAdmissionTreatment extends Document {
   storageId: mongoose.Types.ObjectId;
   createdPersonId: mongoose.Types.ObjectId;
   createdBranchId: mongoose.Types.ObjectId;
-  personId: mongoose.Types.ObjectId;
   customPrice: number;
   autoApplyCampaign: boolean;
   autoApplyCoupon: boolean;
@@ -51,11 +50,6 @@ const AdmissionTreatmentSchema: Schema = new Schema(
     createdBranchId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Branch',
-      required: true,
-    },
-    personId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Person',
       required: true,
     },
     customPrice: {

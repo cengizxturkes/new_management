@@ -14,7 +14,6 @@ export interface IAdmissionTreatment {
   storageId: Schema.Types.ObjectId;
   createdPersonId: Schema.Types.ObjectId;
   createdBranchId: Schema.Types.ObjectId;
-  personId: Schema.Types.ObjectId;
   customPrice: number;
   autoApplyCampaign: boolean;
   autoApplyCoupon: boolean;
@@ -151,11 +150,6 @@ const AdmissionSchema = new Schema({
     createdBranchId: {
       type: Schema.Types.ObjectId,
       ref: 'Branch',
-      required: true
-    },
-    personId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
       required: true
     },
     customPrice: {
