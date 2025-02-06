@@ -21,6 +21,8 @@ import { configureSocket } from './config/socket';
 import unitRoutes from './routes/unitRoutes';
 import treatmentRoutes from './routes/treatmentRoutes';
 import admissionTreatmentRoutes from './routes/admissionTreatmentRoutes';
+import './models/Storage'; // Storage modelini import ediyoruz
+import './models/Person'; // Person modelini import ediyoruz
 
 dotenv.config();
 
