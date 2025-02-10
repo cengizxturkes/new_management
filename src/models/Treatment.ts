@@ -4,6 +4,7 @@ export interface ITreatment extends Document {
   name: string;
   code: string;
   description?: string;
+  descriptionHtml?: string;
   price: number;
   duration: number; // dakika cinsinden
   treatmentPictureb64?: string;
@@ -42,6 +43,9 @@ const TreatmentSchema: Schema = new Schema(
       trim: true,
     },
     description: {
+      type: String,
+    },
+    descriptionHtml: {
       type: String,
     },
     price: {

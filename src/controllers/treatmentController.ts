@@ -184,4 +184,48 @@ export const resetCache = catchAsync(async (_req: Request, res: Response): Promi
     status: 'success',
     message: 'Tedavi önbelleği başarıyla temizlendi'
   });
+});
+
+// Tedavi master bilgilerini getir (minimal veri)
+export const getTreatmentMaster = catchAsync(async (req: Request, res: Response): Promise<void> => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+  const search = req.query.search as string;
+
+  const cacheKey = `treatments-master:${page}:${limit}:${search || 'all'}`;
+  const cachedData = await redisClient.get(cacheKey);
+
+  if (cachedData) {
+    res.status(200).json({
+      status: 'success',
+      message: 'Tedavi master bilgileri önbellekten getirildi',
+      data: JSON.parse(cachedData)
+    });
+    return;
+  }
+
+  let query = Treatment.find(
+    search ? {
+      $or: [
+        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } }
+      ]
+    } : {}
+  );
+
+  const treatments = await query
+    .select('_id name price treatmentPictureb64 duration intervalDays')
+    .sort({ name: 1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  await redisClient.setex(cacheKey, 3600, JSON.stringify(treatments));
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Tedavi master bilgileri başarıyla getirildi',
+    data: treatments
+  });
 }); 

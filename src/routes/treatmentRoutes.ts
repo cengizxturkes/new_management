@@ -7,7 +7,8 @@ import {
   updateTreatment,
   deleteTreatment,
   getPopularTreatments,
-  resetCache
+  resetCache,
+  getTreatmentMaster
 } from '../controllers/treatmentController';
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.use(protect);
 
 // Public routes (authenticated)
 router.get('/', getAllTreatments);
+router.get('/master', getTreatmentMaster);
 router.get('/popular', getPopularTreatments);
 router.get('/:id', getTreatment);
 
@@ -52,6 +54,9 @@ router.post('/reset-cache', resetCache);
  *         description:
  *           type: string
  *           description: Tedavi açıklaması
+ *         descriptionHtml:
+ *           type: string
+ *           description: Tedavi açıklaması (HTML formatında)
  *         price:
  *           type: number
  *           description: Tedavi fiyatı
@@ -105,6 +110,8 @@ router.post('/reset-cache', resetCache);
  *       example:
  *         name: "Fizik Tedavi"
  *         code: "FT1234"
+ *         description: "Fizik tedavi hizmeti"
+ *         descriptionHtml: "<p>Fizik tedavi hizmeti</p><ul><li>Egzersiz</li><li>Masaj</li></ul>"
  *         categoryId: "60d5ecb8b5c9c62b3c7c1b5f"
  *         treatmentType: 0
  *         processTimeInMinutes: 21
@@ -294,6 +301,65 @@ router.post('/reset-cache', resetCache);
  *     responses:
  *       200:
  *         description: Tedavi başarıyla silindi
+ *
+ * /api/treatments/master:
+ *   get:
+ *     summary: Tedavi master bilgilerini listeler (minimal veri)
+ *     tags: [Treatments]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Sayfa numarası (varsayılan 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Sayfa başına kayıt sayısı (varsayılan 10)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Tedavi adı veya kodu ile arama yapar
+ *     responses:
+ *       200:
+ *         description: Tedavi master bilgileri başarıyla getirildi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         description: Tedavi ID
+ *                       name:
+ *                         type: string
+ *                         description: Tedavi adı
+ *                       price:
+ *                         type: number
+ *                         description: Tedavi fiyatı
+ *                       treatmentPictureb64:
+ *                         type: string
+ *                         description: Base64 formatında tedavi resmi
+ *                       duration:
+ *                         type: number
+ *                         description: Tedavi süresi (dakika)
+ *                       intervalDays:
+ *                         type: number
+ *                         description: Aralık gün sayısı
  */
 
 export default router; 
