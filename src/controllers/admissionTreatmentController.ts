@@ -1,11 +1,18 @@
 import { Request, Response } from 'express';
 import AdmissionTreatment from '../models/AdmissionTreatment';
+import Treatment from '../models/Treatment';
 import { catchAsync } from '../utils/catchAsync';
 import AppError from '../utils/appError';
 
 // Yeni tedavi oluştur
 export const createAdmissionTreatment = catchAsync(async (req: Request, res: Response) => {
   const newAdmissionTreatment = await AdmissionTreatment.create(req.body);
+
+  // Tedavinin saleCount'unu artır
+  await Treatment.findByIdAndUpdate(
+    req.body.treatmentId,
+    { $inc: { saleCount: 1 } }
+  );
 
   res.status(201).json({
     status: 'success',

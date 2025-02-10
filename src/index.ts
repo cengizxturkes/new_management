@@ -21,8 +21,11 @@ import { configureSocket } from './config/socket';
 import unitRoutes from './routes/unitRoutes';
 import treatmentRoutes from './routes/treatmentRoutes';
 import admissionTreatmentRoutes from './routes/admissionTreatmentRoutes';
+import categoryRoutes from './routes/categoryRoutes';
 import './models/Storage'; // Storage modelini import ediyoruz
 import './models/Person'; // Person modelini import ediyoruz
+import './models/Category'; // Category modelini import ediyoruz
+import './models/ItemUnit'; // ItemUnit modelini import ediyoruz
 
 dotenv.config();
 
@@ -58,6 +61,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/units', unitRoutes);
 app.use('/api/treatments', treatmentRoutes);
 app.use('/api/admission-treatments', admissionTreatmentRoutes);
+app.use('/api/categories', categoryRoutes);
 
 const httpServer = createServer(app);
 export const io = configureSocket(httpServer);
