@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>Ankara Mobilya Faturası</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Verdana', 'Tahoma', 'sans-serif';
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .invoice-box {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            line-height: 24px;
+            color: #555;
+        }
+        .invoice-box table {
+            width: 100%;
+            line-height: 1.5;
+            text-align: left;
+            border-collapse: collapse; /* Border'ların birleşmesini sağlar */
+            margin-top: 20px;
+        }
+        .invoice-box table td, .invoice-box table th {
+            padding: 12px;
+            vertical-align: top;
+            border: 1px solid #ddd; /* Tüm hücreler için border ekledik */
+        }
+        .invoice-box table tr.heading td {
+            background: #f2f2f2;
+            font-weight: bold;
+            border-top: 2px solid #ddd;
+            text-align: center;
+        }
+        .invoice-box table tr.item td {
+            background: #fafafa;
+        }
+        .invoice-box table tr.total td {
+            font-weight: bold;
+            background: #f7f7f7;
+            border-top: 3px solid #ddd;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            text-align: center;
+            margin: 0;
+        }
+        .company-info, .client-info, .invoice-info {
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        .company-info strong, .client-info strong, .invoice-info strong {
+            color: #333;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+        .footer a {
+            color: #777;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-box">
+        <div class="header">
+            <img src="{{logo}}" class="logo" />
+            <h1>{{title}}</h1>
+        </div>
+
+        <div class="company-info">
+            <strong>Gönderen:</strong><br>
+            {{from.company}}<br>
+            {{from.address}}<br>
+            {{from.zip}} {{from.city}}<br>
+            {{from.country}}
+        </div>
+
+        <div class="client-info">
+            <strong>Alıcı:</strong><br>
+            {{to.company}}<br>
+            {{to.address}}<br>
+            {{to.zip}} {{to.city}}<br>
+            {{to.country}}
+        </div>
+
+        <div class="invoice-info">
+            <strong>Fatura No:</strong> {{number}}<br>
+            <strong>Tarih:</strong> {{date}}<br>
+            <strong>Düzenleme Tarihi:</strong> {{dueDate}}
+        </div>
+
+        <table>
+            <tr class="heading">
+                <td>Ürün</td>
+                <td>Miktar</td>
+                <td>Birim Fiyat</td>
+                <td>KDV</td>
+                <td>Toplam</td>
+            </tr>
+
+            {{#each products}}
+            <tr class="item">
+                <td>{{description}}</td>
+                <td>{{quantity}}</td>
+                <td>{{price}} TL</td>
+                <td>%{{tax}} KDV</td>
+                <td>{{total}} TL</td>
+            </tr>
+            {{/each}}
+
+            <tr class="total">
+                <td colspan="4">Ara Toplam:</td>
+                <td>{{subtotal}} TL</td>
+            </tr>
+            <tr class="total">
+                <td colspan="4">KDV:</td>
+                <td>{{tax}} TL</td>
+            </tr>
+            <tr class="total">
+                <td colspan="4">Genel Toplam:</td>
+                <td>{{total}} TL</td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            Bu bir bilgisayar çıktısıdır, imza gerektirmez.<br>
+            <a href="https://www.ankaramobilya.com">www.ankaramobilya.com</a>
+        </div>
+    </div>
+</body>
+</html>

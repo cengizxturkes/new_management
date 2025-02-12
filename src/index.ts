@@ -26,6 +26,9 @@ import './models/Storage'; // Storage modelini import ediyoruz
 import './models/Person'; // Person modelini import ediyoruz
 import './models/Category'; // Category modelini import ediyoruz
 import './models/ItemUnit'; // ItemUnit modelini import ediyoruz
+import stockRoutes from './routes/stockRoutes';
+import stockVoucherRoutes from './routes/stockVoucherRoutes';
+import carpenterInvoiceRoutes from './routes/carpenterInvoiceRoutes';
 
 dotenv.config();
 
@@ -62,6 +65,9 @@ app.use('/api/units', unitRoutes);
 app.use('/api/treatments', treatmentRoutes);
 app.use('/api/admission-treatments', admissionTreatmentRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/stocks', stockRoutes);
+app.use('/api/stock-vouchers', stockVoucherRoutes);
+app.use('/api/carpenter-invoices', carpenterInvoiceRoutes);
 
 const httpServer = createServer(app);
 export const io = configureSocket(httpServer);
