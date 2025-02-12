@@ -4,10 +4,10 @@
     "description": "İşletme Yönetim Sistemi",
     "main": "src/index.ts",
     "scripts": {
-        "start": "ts-node src/index.ts",
+        "start": "node dist/index.js",
         "dev": "nodemon src/index.ts",
         "build": "tsc",
-        "seed:test": "ts-node src/utils/seedTestData.ts"
+        "postinstall": "tsc"
     },
     "dependencies": {
         "@faker-js/faker": "^9.4.0",
