@@ -7,6 +7,7 @@ import { specs } from './config/swagger';
 import userRoutes from './routes/userRoutes';
 import branchRoutes from './routes/branchRoutes';
 import { seedInitialData } from './utils/seedData';
+import storageRoutes from './routes/storageRoutes';
 
 import locationRoutes from './routes/locationRoutes';
 import priceListRoutes from './routes/priceListRoutes';
@@ -68,6 +69,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/stocks', stockRoutes);
 app.use('/api/stock-vouchers', stockVoucherRoutes);
 app.use('/api/carpenter-invoices', carpenterInvoiceRoutes);
+app.use('/api/storages', storageRoutes);
 
 const httpServer = createServer(app);
 export const io = configureSocket(httpServer);

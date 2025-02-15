@@ -105,6 +105,7 @@ router.delete('/:id', deleteStorage);
  *                     $ref: '#/components/schemas/Storage'
  *   post:
  *     summary: Yeni depo oluşturur
+ *     description: Yeni bir depo oluşturur. createdPersonId ve createdBranchId otomatik olarak eklenecektir.
  *     tags: [Storages]
  *     security:
  *       - bearerAuth: []
@@ -113,7 +114,27 @@ router.delete('/:id', deleteStorage);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Storage'
+ *             type: object
+ *             required:
+ *               - name
+ *               - code
+ *               - branchId
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Depo adı
+ *               code:
+ *                 type: string
+ *                 description: Depo kodu
+ *               description:
+ *                 type: string
+ *                 description: Depo açıklaması
+ *               isActive:
+ *                 type: boolean
+ *                 description: Depo aktif mi?
+ *               branchId:
+ *                 type: string
+ *                 description: Şube ID
  *     responses:
  *       201:
  *         description: Depo başarıyla oluşturuldu

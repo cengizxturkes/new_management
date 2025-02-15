@@ -2,8 +2,6 @@ import { Request, Response } from 'express';
 import Storage from '../models/Storage';
 import { catchAsync } from '../utils/catchAsync';
 import { ApiResponseBuilder } from '../interfaces/ApiResponse';
-import AppError from '../utils/appError';
-import { redisClient } from '../config/redis';
 
 export const getAllStorages = catchAsync(async (_req: Request, res: Response): Promise<void> => {
   const storages = await Storage.find();
@@ -37,7 +35,15 @@ export const getStorage = catchAsync(async (req: Request, res: Response): Promis
 });
 
 export const createStorage = catchAsync(async (req: Request, res: Response): Promise<void> => {
-  const storage = await Storage.create(req.body);
+  // @ts-ignore - auth middleware'den gelen user bilgisi
+  const { id: createdPersonId, branchId: createdBranchId } = req.user;
+  
+  const storage = await Storage.create({
+    ...req.body,
+    createdPersonId,
+    createdBranchId
+  });
+  
   res.status(201).json(
     new ApiResponseBuilder()
       .success(true)
